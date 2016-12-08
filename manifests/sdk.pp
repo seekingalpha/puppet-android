@@ -21,14 +21,19 @@ class android::sdk {
 
   case $::kernel {
     'Linux': {
-      $unpack_command = "/bin/tar -xvf ${android::paths::archive} --no-same-owner --no-same-permissions && chmod -R a+rx ${android::paths::sdk_home}"
+      $unpack_command_ = "/bin/tar -xvf ${android::paths::archive} --no-same-owner --no-same-permissions && chmod -R a+rx ${android::paths::sdk_home}"
     }
     'Darwin': {
-      $unpack_command = "/usr/bin/unzip ${android::paths::archive} && chmod -R a+rx ${android::paths::sdk_home}"
+      $unpack_command_ = "/usr/bin/unzip ${android::paths::archive} && chmod -R a+rx ${android::paths::sdk_home}"
     }
     default: {
       fail("Unsupported Kernel: ${::kernel} operatingsystem: ${::operatingsystem}")
     }
+  }
+  if versioncmp("${android::paths::version}", "24") > 0 {
+      $unpack_command = "mkdir ${android::paths::sdk_home} && cd ${android::paths::sdk_home} && unzip ${android::paths::archive} && chmod -R a+rx ${android::paths::sdk_home}"
+  } else {
+      $unpack_command = $unpack_command_
   }
 
   file { $android::paths::installdir:
@@ -44,6 +49,7 @@ class android::sdk {
     command => $unpack_command,
     creates => $android::paths::sdk_home,
     cwd     => $android::paths::installdir,
+    path    => [ '/usr/bin', '/bin', ],
   }->
   file { 'android-executable':
     ensure => present,
