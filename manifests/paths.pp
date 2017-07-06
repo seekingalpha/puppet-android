@@ -29,7 +29,22 @@ class android::paths {
       fail("Unsupported Kernel: ${::kernel} operatingsystem: ${::operatingsystem}")
     }
   }
-  $source   = "http://dl.google.com/android/${distrib_file}"
+  if versioncmp("${version}", "24") > 0 {
+    case $::kernel {
+      'Linux': {
+        $distrib_file_ = "tools_r${version}-linux.zip"
+      }
+      'Darwin': {
+        $distrib_file_ = "tools-sdk_r${version}-macosx.zip"
+      }
+      default: {
+        fail("Unsupported Kernel: ${::kernel} operatingsystem: ${::operatingsystem}")
+      }
+    }
+    $source   = "https://dl.google.com/android/repository/${distrib_file_}"
+  } else {
+    $source   = "http://dl.google.com/android/${distrib_file}"
+  }
   $archive  = "${installdir}/${distrib_file}"
 
   $toolsdir = "${sdk_home}/tools"
